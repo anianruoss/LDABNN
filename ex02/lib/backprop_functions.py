@@ -49,6 +49,7 @@ Please checkout the corresponding documentation of class
 import torch
 from torch.autograd import Function
 
+
 class LinearFunction(Function):
     r"""Implementation of a fully-connected layer w/o activation function.
 
@@ -110,10 +111,7 @@ class LinearFunction(Function):
         """
         ctx.save_for_backward(A, W, b)
 
-        raise NotImplementedError('TODO implement')
-        # Z = ...
-
-        # return Z
+        return torch.matmul(A, W.T) + (b if b is not None else 0)
 
     @staticmethod
     def backward(ctx, grad_Z):
@@ -170,16 +168,14 @@ class LinearFunction(Function):
         # We only need to compute gradients for tensors that are flagged to
         # require gradients!
         if ctx.needs_input_grad[0]:
-            raise NotImplementedError('TODO implement')
-            # grad_A = ...
+            grad_A = torch.matmul(grad_Z, W)
         if ctx.needs_input_grad[1]:
-            raise NotImplementedError('TODO implement')
-            # grad_W = ...
+            grad_W = torch.matmul(grad_Z.T, A)
         if b is not None and ctx.needs_input_grad[2]:
-            raise NotImplementedError('TODO implement')
-            # grad_b = ...
+            grad_b = grad_Z.sum(0)
 
         return grad_A, grad_W, grad_b
+
 
 def linear_function(A, W, b=None):
     """An alias for using class :class:`LinearFunction`.
@@ -193,6 +189,7 @@ def linear_function(A, W, b=None):
         return LinearFunction.apply(A, W)
     else:
         return LinearFunction.apply(A, W, b)
+
 
 class SigmoidFunction(Function):
     r"""Implementation of a sigmoid non-linearity.
@@ -240,10 +237,7 @@ class SigmoidFunction(Function):
         """
         ctx.save_for_backward(Z)
 
-        raise NotImplementedError('TODO implement')
-        # A = ...
-
-        # return A
+        return 1. / (1. + torch.exp(-Z))
 
     @staticmethod
     def backward(ctx, grad_A):
@@ -263,7 +257,7 @@ class SigmoidFunction(Function):
         where the function :math:`\sigma^{'}(\cdot)` applies the derivative of
         the sigmoid non-linearity element-wise to its input tensor. The operator
         :math:`\odot` denotes the Hadamard_ product (element-wise product).
-        
+
         .. _Hadamard: https://en.wikipedia.org/wiki/Hadamard_product_(matrices)
 
         Args:
@@ -287,13 +281,15 @@ class SigmoidFunction(Function):
         # We only need to compute gradients for tensors that are flagged to
         # require gradients!
         if ctx.needs_input_grad[0]:
-            raise NotImplementedError('TODO implement')
-            # grad_Z = ...
+            sigmoid = 1. / (1. + torch.exp(-Z))
+            grad_Z = grad_A * sigmoid * (1. - sigmoid)
 
         return grad_Z
 
+
 sigmoid_function = SigmoidFunction.apply
 """An alias for using class :class:`SigmoidFunction`."""
+
 
 class MSELossFunction(Function):
     r"""Implementation of a mean-squared-error (MSE) loss.
@@ -337,10 +333,7 @@ class MSELossFunction(Function):
         """
         ctx.save_for_backward(A, T)
 
-        raise NotImplementedError('TODO implement')
-        # L = ...
-
-        # return L
+        return 0.5 * torch.mean(torch.norm(A - T, p=2, dim=1) ** 2)
 
     @staticmethod
     def backward(ctx, grad_L):
@@ -385,22 +378,21 @@ class MSELossFunction(Function):
         grad_A = None
         grad_T = None
 
+        B = A.shape[0]
+
         # We only need to compute gradients for tensors that are flagged to
         # require gradients!
         if ctx.needs_input_grad[0]:
-            raise NotImplementedError('TODO implement')
-            # grad_A = ...
+            grad_A = (A - T) / B
 
         if ctx.needs_input_grad[1]:
-            raise NotImplementedError('TODO implement')
-            # grad_T = ...
+            grad_T = (T - A) / B
 
-        # return grad_A, grad_T
+        return grad_A, grad_T
+
 
 mse_loss = MSELossFunction.apply
 """An alias for using class :class:`MSELossFunction`."""
 
 if __name__ == '__main__':
     pass
-
-
