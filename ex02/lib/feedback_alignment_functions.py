@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# Anian Ruoss, 16-934-002, anruoss@ethz.ch
+
 """
 Adding custom functions for feedback alignment to PyTorch's autograd
 --------------------------------------------------------------------
