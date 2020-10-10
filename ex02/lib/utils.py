@@ -31,12 +31,11 @@ helper functions.
 import matplotlib.pyplot as plt
 import numpy as np
 import torch
+from lib.mlp import MLP
 from torch.utils.data import Dataset
 
-from lib.mlp import MLP
-from matplotlib import rc
 
-def regression_cubic_poly(num_train=20, num_test=100, train_domain=(-4,-4),
+def regression_cubic_poly(num_train=20, num_test=100, train_domain=(-4, -4),
                           test_domain=(-4, 4), rseed=42):
     r"""Generate a dataset for a 1D regression task with a cubic polynomial.
 
@@ -68,11 +67,11 @@ def regression_cubic_poly(num_train=20, num_test=100, train_domain=(-4,-4),
     train_domain = [-4, 4]
 
     train_x = rand.uniform(low=train_domain[0], high=train_domain[1],
-                               size=(num_train, 1))
+                           size=(num_train, 1))
     test_x = np.linspace(start=test_domain[0], stop=test_domain[1],
                          num=num_test).reshape((num_test, 1))
 
-    map_function = lambda x : (x**3.)
+    def map_function(x): return (x**3.)
     train_y = map_function(train_x)
     test_y = map_function(test_x)
 
@@ -82,16 +81,18 @@ def regression_cubic_poly(num_train=20, num_test=100, train_domain=(-4,-4),
 
     return train_x, test_x, train_y, test_y
 
+
 def generate_data_from_teacher(num_train=1000, num_test=100, n_in=5, n_out=5,
-                               n_hidden=[10,10,10], linear=False):
+                               n_hidden=[10, 10, 10], linear=False):
     """Generate data for a regression task through a teacher model.
 
     This function generates random input patterns and creates a random MLP
-    (fully-connected neural network), that is used as a teacher model. I.e., the
-    generated input data is fed through the teacher model to produce target
+    (fully-connected neural network), that is used as a teacher model. I.e.,
+    the generated input data is fed through the teacher model to produce target
     outputs. The so produced dataset can be used to train and assess a
-    student model. Hence, a learning procedure can be verified by validating its
-    capability of training a student network to mimic a given teacher network.
+    student model. Hence, a learning procedure can be verified by validating
+    its capability of training a student network to mimic a given teacher
+    network.
 
     Input samples will be uniformly drawn from a unit cube.
 
@@ -122,7 +123,7 @@ def generate_data_from_teacher(num_train=1000, num_test=100, n_in=5, n_out=5,
     rand = np.random
 
     train_x = rand.uniform(low=0, high=1, size=(num_train, n_in))
-    test_x = rand.uniform(low=0, high=1, size=(num_train, n_in))
+    test_x = rand.uniform(low=0, high=1, size=(num_test, n_in))
 
     # Note: make sure that gain is high, such that the neurons are pushed into
     # nonlinear regime. Otherwise we have a linear dataset
@@ -136,6 +137,7 @@ def generate_data_from_teacher(num_train=1000, num_test=100, n_in=5, n_out=5,
 
     return train_x, test_x, train_y, test_y
 
+
 class RegressionDataset(Dataset):
     """A simple regression dataset.
 
@@ -143,6 +145,7 @@ class RegressionDataset(Dataset):
         inputs (numpy.ndarray): The input samples.
         outputs (numpy.ndarray): The output samples.
     """
+
     def __init__(self, inputs, outputs):
         assert(len(inputs.shape) == 2)
         assert(len(outputs.shape) == 2)
@@ -163,6 +166,7 @@ class RegressionDataset(Dataset):
 
         return batch_in, batch_out
 
+
 def plot_predictions(device, test_loader, net):
     """Plot the predictions of 1D regression tasks.
 
@@ -177,10 +181,10 @@ def plot_predictions(device, test_loader, net):
 
     inputs = data.inputs.detach().cpu().numpy()
     targets = data.outputs.detach().cpu().numpy()
-    
+
     with torch.no_grad():
-        # Note, for simplicity, we assume that the dataset is small and we don't
-        # have t collect the predictions by iterating over mini-batches.
+        # Note, for simplicity, we assume that the dataset is small and we
+        # don't have to collect the predictions by iterating over mini-batches.
         predictions = net.forward(data.inputs).detach().cpu().numpy()
 
     plt.figure(figsize=(10, 6))
@@ -196,7 +200,8 @@ def plot_predictions(device, test_loader, net):
 
     plt.show()
 
-def compute_matrix_angle(C,D):
+
+def compute_matrix_angle(C, D):
     """Compute the angle between the two given matrices in degrees.
 
     Args:
@@ -213,10 +218,11 @@ def compute_matrix_angle(C,D):
     C_vectorized = C.reshape(-1)
     D_vectorized = D.reshape(-1)
 
-    cosine_angle = C_vectorized.dot(D_vectorized)/\
-                   (torch.norm(C_vectorized, p=2)*\
-                    torch.norm(D_vectorized, p=2))
+    cosine_angle = C_vectorized.dot(D_vectorized) /\
+        (torch.norm(C_vectorized, p=2) *
+         torch.norm(D_vectorized, p=2))
     return 180/3.1415*torch.acos(cosine_angle)
+
 
 def plot_angles(angle_tensor, title, ylabel):
     """Show a plot of the trajectory of the angle between two matrices
@@ -237,10 +243,10 @@ def plot_angles(angle_tensor, title, ylabel):
     fig.suptitle(title, fontsize=16)
     for i in range(nb_layers):
         plt.subplot(nb_layers, 1, i+1)
-        plt.plot(angles[:,i])
+        plt.plot(angles[:, i])
         plt.ylabel(ylabel % (str(i+1), str(i+1)))
         plt.xlabel('epoch')
-        if i==nb_layers-1:
+        if i == nb_layers-1:
             plt.title('output layer')
         else:
             plt.title('hidden layer {}'.format(i+1))
@@ -248,10 +254,5 @@ def plot_angles(angle_tensor, title, ylabel):
     plt.show()
 
 
-
-
-
 if __name__ == '__main__':
     pass
-
-

@@ -35,8 +35,8 @@ Please checkout the corresponding documentation of class
     https://pytorch.org/tutorials/beginner/blitz/autograd_tutorial.html
 """
 
-import torch
 from torch.autograd import Function
+
 
 class LinearFunctionFA(Function):
     r"""Implementation of a fully-connected layer w/o activation function that
@@ -85,8 +85,8 @@ class LinearFunctionFA(Function):
         This method implements eq. :eq:`eq-mini-batch-fa`.
 
         Args:
-            ctx: A context. Should be used to store activations which are needed
-                in the backward pass.
+            ctx: A context. Should be used to store activations which are
+                needed in the backward pass.
             A: A mini-batch of input activations :math:`A`.
             W: The weight matrix :math:`W`.
             B: The random feedback weight matrix :math:`B`. This matrix is not
@@ -112,8 +112,8 @@ class LinearFunctionFA(Function):
         according to the feedback alignment method.
 
         The matrix ``grad_Z``, which we denote by
-        :math:`\delta_Z \in \mathbb{R}^{B \times N}`, contains the error signals
-        of the scalar loss function with respect to each element
+        :math:`\delta_Z \in \mathbb{R}^{B \times N}`, contains the error
+        signals of the scalar loss function with respect to each element
         from the :meth:`forward` output matrix :math:`Z`, propagated by
         feedback alignment.
 
@@ -172,7 +172,7 @@ class LinearFunctionFA(Function):
         if ctx.needs_input_grad[1]:
             raise NotImplementedError('TODO implement')
             # grad_W = ...
-        if b is not None and ctx.needs_input_grad[2]:
+        if b is not None and ctx.needs_input_grad[3]:
             raise NotImplementedError('TODO implement')
             # grad_b = ...
 
@@ -192,7 +192,6 @@ def linear_function_fa(A, W, B, b=None):
     else:
         return LinearFunctionFA.apply(A, W, B, b)
 
+
 if __name__ == '__main__':
     pass
-
-
