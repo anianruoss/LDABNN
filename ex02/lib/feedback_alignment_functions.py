@@ -35,6 +35,7 @@ Please checkout the corresponding documentation of class
     https://pytorch.org/tutorials/beginner/blitz/autograd_tutorial.html
 """
 
+import torch
 from torch.autograd import Function
 
 
@@ -101,10 +102,7 @@ class LinearFunctionFA(Function):
         """
         ctx.save_for_backward(A, W, B, b)
 
-        raise NotImplementedError('TODO implement')
-        # Z = ...
-
-        # return Z
+        return torch.matmul(A, W.T) + (b if b is not None else 0)
 
     @staticmethod
     def backward(ctx, grad_Z):
@@ -167,14 +165,11 @@ class LinearFunctionFA(Function):
         # We only need to compute gradients for tensors that are flagged to
         # require gradients!
         if ctx.needs_input_grad[0]:
-            raise NotImplementedError('TODO implement')
-            # grad_A = ...
+            grad_A = torch.matmul(grad_Z, B.T)
         if ctx.needs_input_grad[1]:
-            raise NotImplementedError('TODO implement')
-            # grad_W = ...
+            grad_W = torch.matmul(grad_Z.T, A)
         if b is not None and ctx.needs_input_grad[3]:
-            raise NotImplementedError('TODO implement')
-            # grad_b = ...
+            grad_b = grad_Z.sum(0)
 
         return grad_A, grad_W, grad_B, grad_b
 
