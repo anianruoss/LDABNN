@@ -12,6 +12,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
+# Anian Ruoss, 16-934-002, anruoss@ethz.ch
+
 """
 A collection of helper functions
 --------------------------------
@@ -99,7 +102,10 @@ def sampleGaussian(mu, logvar):
     sample = None
 
     if sample is None:
-        raise NotImplementedError('TODO implement')
+        eps = torch.randn_like(logvar)
+        std = torch.exp(0.5 * logvar)
+        sample = mu + std * eps
+
     return sample
 
 
@@ -129,9 +135,11 @@ def computeELBO(net, predictions, targets, device, args):
     nll_scale = None
 
     if nll_scale is None:
-        raise NotImplementedError('TODO implement')
+        M = 1
+        N = args.num_train_samples
+        nll_scale = N / M
 
-    loss = 0.5*F.mse_loss(predictions, targets, reduction='mean')
+    loss = 0.5 * F.mse_loss(predictions, targets, reduction='mean')
 
     nll = nll_scale * loss
 
@@ -162,7 +170,13 @@ def computeKLD(mean_a_flat, logvar_a_flat, device, mean_b_flat=0.0,
     kl = None
 
     if kl is None:
-        raise NotImplementedError('TODO implement')
+        var_a_flat = torch.exp(0.5 * logvar_a_flat) ** 2
+        var_b_flat = torch.exp(0.5 * logvar_b_flat) ** 2
+
+        kl = - 0.5 * torch.sum(
+            1. - (var_a_flat + (mean_a_flat - mean_b_flat) ** 2) / var_b_flat
+            + logvar_a_flat - logvar_b_flat
+        )
 
     return kl
 
