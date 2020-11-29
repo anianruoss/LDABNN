@@ -90,9 +90,9 @@ figure out how to turn the ODEs into code appropriately.
 #   lib/spiking_functions.py
 #   theory_question.txt
 
-# Student name :
-# Student ID   :
-# Email address:
+# Student name : Anian Ruoss
+# Student ID   : 16-934-002
+# Email address: anruoss@ethz.ch
 
 import lib.spiking_functions as sf
 import numpy as np

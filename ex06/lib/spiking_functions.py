@@ -36,9 +36,9 @@ neurons.
 #   lib/spiking_functions.py
 #   theory_question.txt
 
-# Student name :
-# Student ID   :
-# Email address:
+# Student name : Anian Ruoss
+# Student ID   : 16-934-002
+# Email address: anruoss@ethz.ch
 
 
 import torch
