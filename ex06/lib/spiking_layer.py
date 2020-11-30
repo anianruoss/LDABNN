@@ -30,8 +30,8 @@ Here we will use a simplified model: the leaky integrate-and-fire
 model for spiking neurons. Such models are composed of 1) a description of the
 dynamics of the membrane potential, and 2) a mechanism for triggering spikes.
 
-In our implementation, the dynamics of the membrane potential, together with the
-dynamics of the current and spiking variables, are updated at each timestep
+In our implementation, the dynamics of the membrane potential, together with
+the dynamics of the current and spiking variables, are updated at each timestep
 based on a discrete implementation of a set of differential equations described
 below.
 
@@ -51,11 +51,11 @@ causes an instantaneous increase in the post-synaptic membrane potential, which
 then decays exponentially with time i.e. :math:`u(t) = e^{-t}`, assuming the
 pre-synaptic spike occurs at :math:`t=0`, and a resting potential of 0.
 A more biologically plausible model is an alpha-shaped post-synaptic current,
-where the post-synaptic current following a pre-synaptic spike has a finite rise
-time. In this case we would have :math:`u(t) = te^{-t}`. In this tutorial, we
-ask you to implement alpha-shaped post-synaptic currents by filling the methods
-:meth:`lib.spiking_layer.update_H` and :meth:`lib.spiking_layer.update_I`.
-These are based on the following equations:
+where the post-synaptic current following a pre-synaptic spike has a finite
+rise time. In this case we would have :math:`u(t) = te^{-t}`. In this tutorial,
+we ask you to implement alpha-shaped post-synaptic currents by filling the
+methods :meth:`lib.spiking_layer.update_H` and
+:meth:`lib.spiking_layer.update_I`. These are based on the following equations:
 
 .. math::
     \frac{dH_i}{dt} =& - \frac{1}{\tau_{rise}} H_i (t) + \sum_j W_{ij} S_j (t)
@@ -180,8 +180,7 @@ class SpikingLayer(nn.Module):
             The updated membrane potential of the neurons in the layer.
 
         """
-        raise NotImplementedError('TODO implement')
-        # return ...
+        return self.beta * (U - self.u_rest) + self.delta_t * self.R * I / self.tau_mem - S * (self.u_threshold - self.u_rest) + self.u_rest
 
     def update_H(self, H, inputs):
         r"""Updates the state of the auxiliary variable for alpha-shaped
@@ -202,11 +201,11 @@ class SpikingLayer(nn.Module):
                 time step.
 
         Returns:
-            The updated auxiliary current variable for the neurons in the layer.
+            The updated auxiliary current variable for the neurons in the
+            layer.
 
         """
-        raise NotImplementedError('TODO implement')
-        # return ...
+        return self.phi * H + inputs
 
     def update_I(self, I, H):
         r"""Updates the post-synaptic current.
@@ -226,8 +225,7 @@ class SpikingLayer(nn.Module):
             The updated post-synaptic current of the neurons in the layer.
 
         """
-        raise NotImplementedError('TODO implement')
-        # return ...
+        return self.gamma * I + self.delta_t * H
 
     def forward(self, X):
         r"""Computes the output activation of a spiking layer.
@@ -293,17 +291,14 @@ class SpikingLayer(nn.Module):
         for n in range(1, N):
 
             # Compute the post-synaptic current
-            raise NotImplementedError('TODO implement')
-            # H[n] = self.update_H(...)
-            # I[n] = self.update_I(...)
+            H[n] = self.update_H(H[n - 1], inputs[:, n - 1])
+            I[n] = self.update_I(I[n - 1], H[n - 1])
 
             # Compute the membrane potential
-            raise NotImplementedError('TODO implement')
-            # U[n] = self.update_U(...)
+            U[n] = self.update_U(U[n - 1], I[n - 1], S[n - 1])
 
             # Compute the spiking activity
-            raise NotImplementedError('TODO implement')
-            # S[n] = self.compute_spikes(...)
+            S[n] = self.compute_spikes(U[n] - self.u_threshold)
 
         U = torch.stack(U, dim=1)
         S = torch.stack(S, dim=1)
