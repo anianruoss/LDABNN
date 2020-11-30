@@ -43,7 +43,6 @@ neurons.
 
 import torch
 import torch.nn as nn
-from torch.autograd import Function
 
 cross_entropy_loss = nn.CrossEntropyLoss()
 
@@ -53,8 +52,8 @@ def spike_function(D):
 
     This function takes :math:`D = ( U - U_{threshold} )` as input,
     which is the amount by which the membrane potential of neurons is above the
-    membrane threshold :math:`U_{threshold} \in \mathbb{R}`. There are :math:`M`
-    neurons in a layer and minibatch size is :math:`B`, hence
+    membrane threshold :math:`U_{threshold} \in \mathbb{R}`. There are
+    :math:`M` neurons in a layer and minibatch size is :math:`B`, hence
     :math:`D \in \mathbb{R}^{B \times M}`.
 
     This function computes the spiking nonlinearity, which should
@@ -89,10 +88,9 @@ def spike_function(D):
         (defined in eq. :eq:`eq-heaviside`) elementwise to D.
 
     """
-    raise NotImplementedError('TODO implement')
-    # S = ...
+    S = torch.where(D < 0, torch.zeros_like(D), torch.ones_like(D))
 
-    # return S
+    return S
 
 
 def loss_on_voltage(U, T):
@@ -133,10 +131,10 @@ def loss_on_voltage(U, T):
     Returns:
         (float): The cross entropy loss for the average membrane potentials.
     """
-    raise NotImplementedError('TODO implement')
-    # Q ...
+    Q = U.mean(dim=1)
+    loss = nn.CrossEntropyLoss()
 
-    # return ...
+    return loss(Q, T)
 
 
 def accuracy_on_voltage(U, T):
@@ -152,9 +150,9 @@ def accuracy_on_voltage(U, T):
     :math:`T \in \mathbb{N}^{B}`, indicating the correct classes of the current
     mini-batch.
 
-    Using these two arguments, it finds the output neurons that have the highest
-    membrane voltage for each image, and compares these with the target labels
-    to compute the accuracy.
+    Using these two arguments, it finds the output neurons that have the
+    highest membrane voltage for each image, and compares these with the target
+    labels to compute the accuracy.
 
     Letting :math:`Q_{b,i} =  \frac{1}{t_{max}}\sum_{t=1}^{t_{max}} U_{b,t,i}`
     be the average membrane potential across all timesteps for each output
@@ -173,7 +171,6 @@ def accuracy_on_voltage(U, T):
         (float): The classification accuracy of the current batch.
 
     """
-    raise NotImplementedError('TODO implement')
-    # Q ...
+    Q = U.mean(dim=1)
 
-    # return ...
+    return torch.mean(torch.eq(Q.argmax(dim=1), T).float())
