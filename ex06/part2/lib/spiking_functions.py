@@ -103,10 +103,7 @@ def derivative_hard_sigmoid(x):
        (torch.tensor): The derivative of the hard-sigmoid on x.
 
     """
-    raise NotImplementedError('TODO implement')
-    # deriv = ...
-
-    # return deriv
+    return spike_function(x) - spike_function(x - 1)
 
 
 def spike_function(D):
@@ -151,11 +148,9 @@ def spike_function(D):
         (defined in eq. :eq:`eq-heaviside`) elementwise to D.
 
     """
-    raise NotImplementedError('TODO implement')
-    # Paste your code from last week here
-    # S = ...
+    S = torch.where(D < 0, torch.zeros_like(D), torch.ones_like(D))
 
-    # return S
+    return S
 
 
 def loss_on_spikes(S, T):
@@ -194,11 +189,10 @@ def loss_on_spikes(S, T):
     Returns:
         (float): The cross entropy loss on the average of number of spikes.
     """
-    raise NotImplementedError('TODO implement')
-    # Z = ...
-    # cross_ent_loss = ...
+    Z = S.mean(dim=1)
+    loss = nn.CrossEntropyLoss()
 
-    # return cross_ent_loss
+    return loss(Z, T)
 
 
 def accuracy_on_spikes(S, T):
@@ -234,12 +228,9 @@ def accuracy_on_spikes(S, T):
         (float): The classification accuracy of the current batch.
 
     """
-    raise NotImplementedError('TODO implement')
-    # Z = ...
-    # Y = ...
-    # acc = ...
+    Z = S.mean(dim=1)
 
-    # return acc
+    return torch.mean(torch.eq(Z.argmax(dim=1), T).float())
 
 
 def spike_regularizer(spikes_list):
@@ -290,9 +281,10 @@ def spike_regularizer(spikes_list):
         (float): The regularization loss term.
 
     """
-    raise NotImplementedError('TODO implement')
-    # reg_loss = ...
-    # return reg_loss
+    l1_loss = sum(spikes.sum() for spikes in spikes_list)
+    l2_loss = sum(torch.mean(spikes.sum(dim=[0, 1]) ** 2) for spikes in spikes_list)
+
+    return l1_loss + l2_loss
 
 
 class SurrogateSpike(Function):

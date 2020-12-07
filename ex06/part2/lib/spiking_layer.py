@@ -191,9 +191,7 @@ class SpikingLayer(nn.Module):
             The updated membrane potential of the neurons in the layer.
 
         """
-        raise NotImplementedError('TODO implement')
-        # Paste your code from last week here
-        # return ...
+        return self.beta * (U - self.u_rest) + self.delta_t * self.R * I / self.tau_mem - S * (self.u_threshold - self.u_rest) + self.u_rest
 
     def update_H(self, H, inputs):
         r"""Updates the state of the auxiliary variable for alpha-shaped
@@ -221,9 +219,7 @@ class SpikingLayer(nn.Module):
             The updated auxiliary current variable for the neurons in the layer.
 
         """
-        raise NotImplementedError('TODO implement')
-        # Paste your code from last week here
-        # return ...
+        return self.phi * H + inputs
 
     def update_I(self, I, H):
         r"""Updates the post-synaptic current.
@@ -247,9 +243,7 @@ class SpikingLayer(nn.Module):
             The updated post-synaptic current of the neurons in the layer.
 
         """
-        raise NotImplementedError('TODO implement')
-        # Paste your code from last week here
-        # return ...
+        return self.gamma * I + self.delta_t * H
 
     def forward(self, X):
         r"""Computes the output activation of a spiking layer.
@@ -316,17 +310,14 @@ class SpikingLayer(nn.Module):
 
             # Paste your code from last week here
             # Compute the post-synaptic current
-            raise NotImplementedError('TODO implement')
-            # H[n] = self.update_H(...)
-            # I[n] = self.update_I(...)
+            H[n] = self.update_H(H[n - 1], inputs[:, n - 1])
+            I[n] = self.update_I(I[n - 1], H[n - 1])
 
             # Compute the membrane potential
-            raise NotImplementedError('TODO implement')
-            # U[n] = self.update_U(...)
+            U[n] = self.update_U(U[n - 1], I[n - 1], S[n - 1])
 
             # Compute the spiking activity
-            raise NotImplementedError('TODO implement')
-            # S[n] = self.compute_spikes(...)
+            S[n] = self.compute_spikes(U[n] - self.u_threshold)
 
         U = torch.stack(U, dim=1)
         S = torch.stack(S, dim=1)
