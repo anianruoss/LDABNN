@@ -17,9 +17,9 @@ r"""Implementing, training, and evaluating a spiking neural network (:mod:`lib.s
 
 The module :mod:`lib.spiking_functions` contains custom functions that should
 be used for running, training and evaluating spiking networks. Specifically,
-you must implement the surrogate gradient for the spiking nonlinearity, as well 
-as the functions computing the loss and the accuracy on the spike trains of the 
-output neurons. You will also implement a function that calculates a 
+you must implement the surrogate gradient for the spiking nonlinearity, as well
+as the functions computing the loss and the accuracy on the spike trains of the
+output neurons. You will also implement a function that calculates a
 regularization loss term on the spiking activities.
 
 New functionality can be added to
@@ -69,9 +69,9 @@ computes the regularization loss term
 #   lib/spiking_functions.py
 #   theory_question.txt
 
-# Student name :
-# Student ID   :
-# Email address:
+# Student name : Anian Ruoss
+# Student ID   : 16-934-002
+# Email address: anruoss@ethz.ch
 
 
 import torch
@@ -80,10 +80,11 @@ from torch.autograd import Function
 
 cross_entropy_loss = nn.CrossEntropyLoss()
 
+
 def derivative_hard_sigmoid(x):
     r"""The analytic derivative of the hard-sigmoid function.
 
-    This function implements the derivative of 
+    This function implements the derivative of
     the hard-sigmoid function with respect to the input :math:`x`,
     :math:`deriv (\cdot)`, defined as
 
@@ -95,12 +96,12 @@ def derivative_hard_sigmoid(x):
         \end{cases}
         :label: eq-hard_sigmoid_deriv
 
-    Args: 
+    Args:
         x (torch.tensor): Input on which to compute the derivative.
-    
+
     Returns:
        (torch.tensor): The derivative of the hard-sigmoid on x.
-    
+
     """
     raise NotImplementedError('TODO implement')
     # deriv = ...
@@ -134,8 +135,8 @@ def spike_function(D):
         :label: eq-heaviside
 
     Last week, you coded the :meth:`spike_function` method to
-    take :math:`D = ( U - U_{threshold} ) \in \mathbb{R}^{B \times M}` as 
-    input and compute :math:`\Theta(D)` elementwise for each entry in the 
+    take :math:`D = ( U - U_{threshold} ) \in \mathbb{R}^{B \times M}` as
+    input and compute :math:`\Theta(D)` elementwise for each entry in the
     matrix. This is the same function. You should paste the code you wrote last
     week for that function in this week's function.
 
@@ -158,13 +159,13 @@ def spike_function(D):
 
 
 def loss_on_spikes(S, T):
-    r"""Computes cross entropy loss based on the spike trains of the output 
+    r"""Computes cross entropy loss based on the spike trains of the output
     units.
 
     Takes a set of output spikes in form of a tensor
     :math:`S \in \mathbb{R}^{B \times t_{max} \times M}`,
-    where :math:`B` denotes the size of the mini-batch, :math:`t_{max}` the 
-    number of timesteps during which each mini-batch is presented, and :math:`M` 
+    where :math:`B` denotes the size of the mini-batch, :math:`t_{max}` the
+    number of timesteps during which each mini-batch is presented, and :math:`M`
     the number of output units. Additionally, it takes a set of target labels
     :math:`T \in \mathbb{N}^{B}`, indicating the true class of each image
     :math:`b` in the current mini-batch.
@@ -208,13 +209,13 @@ def accuracy_on_spikes(S, T):
     :math:`S \in \mathbb{R}^{B \times t_{max} \times M}`,
     where :math:`B` denotes the size of
     the mini-batch, :math:`t_{max}` the number of timesteps during which each
-    mini-batch is presented, and :math:`M` the number of output units. 
+    mini-batch is presented, and :math:`M` the number of output units.
     Additionally, this ``Function`` requires a set of targets
     :math:`T \in \mathbb{Z}^{B}`, indicating the correct classes of the current
     mini-batch.
 
     Using these two arguments, it finds the output neurons that have the highest
-    membrane spiking rate for each image, and compares these with the target 
+    membrane spiking rate for each image, and compares these with the target
     labels to compute the accuracy.
 
     Letting :math:`Z_{b,i} = \sum_t S_{b,t,i}/t_{max}` be the total number of spikes over
@@ -258,8 +259,8 @@ def spike_regularizer(spikes_list):
     .. math::
         \sum_{l} \sum_{i=1}^{M_l} \sum_{b, t} S_{l,b,t,i}
 
-    where :math:`M_l` is the number of neurons in the hidden layer :math:`l`. 
-    This corresponds to an L1 regularization on the total number of spikes at 
+    where :math:`M_l` is the number of neurons in the hidden layer :math:`l`.
+    This corresponds to an L1 regularization on the total number of spikes at
     the population, thus inducing sparsity at a population level.
 
     The second component regularizes the firing of individual neurons.
@@ -272,17 +273,17 @@ def spike_regularizer(spikes_list):
     This corresponds to an L2 norm in the firing rate of individual neurons,
     thus inducing neurons to have low firing rates.
 
-    Finally, the regularization loss term returned by this function consists of 
+    Finally, the regularization loss term returned by this function consists of
     the sum of these two components.
 
-    Please note that the inputs to this function only correspond to hidden 
+    Please note that the inputs to this function only correspond to hidden
     spiking activity. Therefore you do not have to exclude any
     layers within this function because it is already done for you.
 
     Args:
         spikes_list (list): a list of tensors of spikes, where each element
-            corresponds to the spiking activity of a hidden layer and has shape 
-            :math:`B` (batch size) :math:`\times t_{max}` (number of timesteps 
+            corresponds to the spiking activity of a hidden layer and has shape
+            :math:`B` (batch size) :math:`\times t_{max}` (number of timesteps
             :math:`\times M_l` (number of hidden units in that layer).
 
     Returns:
@@ -295,7 +296,7 @@ def spike_regularizer(spikes_list):
 
 
 class SurrogateSpike(Function):
-    r"""A class to house the functions for the forward and backward passes of a 
+    r"""A class to house the functions for the forward and backward passes of a
     spiking nonlinearity.
 
     Because this class is an instance of :class:`torch.autograd.Function`,
@@ -315,8 +316,8 @@ class SurrogateSpike(Function):
     necessary to use the gradient of a different function for the backward
     pass. This is the 'surrogate gradient'.
 
-    Here we will take the derivative of the hard-sigmoid function with respect to 
-    its input as the surrogate gradient, as implemented in 
+    Here we will take the derivative of the hard-sigmoid function with respect to
+    its input as the surrogate gradient, as implemented in
     :meth:`lib.spiking_functions.derivative_hard_sigmoid`.
 
     """
@@ -334,8 +335,8 @@ class SurrogateSpike(Function):
                 in the backward pass. To achieve this we use the
                 ctx.save_for_backward method.
             D: A matrix of shape :math:`B \times M` representing
-                :math:`U_{b,i} - U_{threshold}`, the difference between the 
-                membrane potential of each of the :math:`M` neurons in each of 
+                :math:`U_{b,i} - U_{threshold}`, the difference between the
+                membrane potential of each of the :math:`M` neurons in each of
                 the :math:`B` mini-batches.
 
         Returns:
@@ -370,5 +371,5 @@ class SurrogateSpike(Function):
         D, = ctx.saved_tensors
         grad_input = grad_output.clone()
         grad = grad_input * derivative_hard_sigmoid(D)
-        
+
         return grad

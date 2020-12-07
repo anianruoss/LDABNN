@@ -18,7 +18,7 @@ A spiking layer module that maintains its own parameters (:mod:`lib.spiking_laye
 
 The module :mod:`lib.spiking_layer` contains the implementation of a single
 spiking layer. The goal is to utilize the custom
-``Functions`` implemented in module :mod:`lib.spiking_functions` 
+``Functions`` implemented in module :mod:`lib.spiking_functions`
 and to provide a wrapper that takes care of managing the parameters
 (:math:`W`) of such a layer. The layers defined here will then be used in
 :mod:`lib.snn` to define a multi-layer spiking network.
@@ -46,14 +46,14 @@ is:
     :label: eq-U-ODE
 
 Most commonly, post-synaptic currents resulting from spiking inputs from
-pre-synaptic neurons are modeled as exponential decay functions, where a spike 
+pre-synaptic neurons are modeled as exponential decay functions, where a spike
 causes an instantaneous increase in the post-synaptic membrane potential, which
 then decays exponentially with time i.e. :math:`u(t) = e^{-t}`, assuming the
-pre-synaptic spike occurs at :math:`t=0`, and a resting potential of 0. 
+pre-synaptic spike occurs at :math:`t=0`, and a resting potential of 0.
 A more biologically plausible model is an alpha-shaped post-synaptic current,
 where the post-synaptic current following a pre-synaptic spike has a finite rise
 time. In this case we would have :math:`u(t) = te^{-t}`. In this tutorial, we
-ask you to implement alpha-shaped post-synaptic currents by filling the methods 
+ask you to implement alpha-shaped post-synaptic currents by filling the methods
 :meth:`lib.spiking_layer.update_H` and :meth:`lib.spiking_layer.update_I`.
 These are based on the following equations:
 
@@ -69,7 +69,7 @@ All equations were derived during the tutorial session, and can be found in
 the tutorial slides. Note, however, that only a discrete version for the case
 of exponential-shaped post-synaptic currents was derived, and not for the
 alpha-shaped case, which is the one you need here. Therefore you will need to
-figure out how to turn the ODEs into code appropriately. 
+figure out how to turn the ODEs into code appropriately.
 
 
 .. autosummary::
@@ -90,18 +90,18 @@ figure out how to turn the ODEs into code appropriately.
 #   lib/spiking_functions.py
 #   theory_question.txt
 
-# Student name :
-# Student ID   :
-# Email address:
-
-import torch
-import torch.nn as nn
-import numpy as np
+# Student name : Anian Ruoss
+# Student ID   : 16-934-002
+# Email address: anruoss@ethz.ch
 
 import lib.spiking_functions as sf
+import numpy as np
+import torch
+import torch.nn as nn
 
 surrogate_spike_fn = sf.SurrogateSpike.apply
-       
+
+
 class SpikingLayer(nn.Module):
     r"""Implements a single spiking layer.
 
@@ -137,18 +137,18 @@ class SpikingLayer(nn.Module):
         nn.Module.__init__(self)
 
         # Store parameters of the layer.
-        self.tau_mem     = args.tau_mem
-        self.tau_syn     = args.tau_syn
-        self.tau_rise    = args.tau_rise
-        self.u_rest      = args.u_rest
+        self.tau_mem = args.tau_mem
+        self.tau_syn = args.tau_syn
+        self.tau_rise = args.tau_rise
+        self.u_rest = args.u_rest
         self.u_threshold = args.u_threshold
-        self.R           = args.R
-        self.delta_t     = args.delta_t
+        self.R = args.R
+        self.delta_t = args.delta_t
 
         # Calculate the decay scales.
         self.gamma = float(np.exp(-args.delta_t/args.tau_syn))
-        self.beta  = float(np.exp(-args.delta_t/args.tau_mem))
-        self.phi   = float(np.exp(-args.delta_t/args.tau_rise))
+        self.beta = float(np.exp(-args.delta_t/args.tau_mem))
+        self.phi = float(np.exp(-args.delta_t/args.tau_rise))
 
         # Define which spike nonlinearity function to use.
         self.compute_spikes = sf.SurrogateSpike.apply
@@ -156,14 +156,13 @@ class SpikingLayer(nn.Module):
         # Create and initialize weights.
         self._weights = nn.Parameter(torch.Tensor(out_features, in_features),
                                      requires_grad=True)
-        nn.init.normal_(self._weights, mean=0.0, \
-                                std=args.weight_scale/np.sqrt(in_features))
+        nn.init.normal_(self._weights, mean=0.0,
+                        std=args.weight_scale/np.sqrt(in_features))
 
     @property
     def weights(self):
         r"""Getter for read-only attribute :attr:`weights`."""
         return self._weights
-
 
     def update_U(self, U, I, S):
         r"""Updates the membrane potential.
@@ -173,14 +172,14 @@ class SpikingLayer(nn.Module):
         version of eq. :eq:`eq-U-ODE` please use the following:
 
         .. math::
-            U_i[n+1] = \beta \Big( U_i[n] - U_{rest} \Big) 
+            U_i[n+1] = \beta \Big( U_i[n] - U_{rest} \Big)
             + \frac{\Delta t}{\tau_{mem}} RI_i[n]
             - S_i[n]\Big(U_{thr} - U_{rest} \Big)
-            + U_{rest} 
+            + U_{rest}
 
-        Note that the :class:`lib.SpikingLayer` has an attribute called 
+        Note that the :class:`lib.SpikingLayer` has an attribute called
         :math:`beta` that corresponds to :math:`\beta`.
-        For details on how to refer these derivations, please refer to the 
+        For details on how to refer these derivations, please refer to the
         ``DiscretizedODEs.pdf`` file in moodle.
 
         Args:
@@ -196,7 +195,6 @@ class SpikingLayer(nn.Module):
         # Paste your code from last week here
         # return ...
 
-
     def update_H(self, H, inputs):
         r"""Updates the state of the auxiliary variable for alpha-shaped
         post-synaptic current.
@@ -210,13 +208,13 @@ class SpikingLayer(nn.Module):
         .. math::
             H_i[n+1] = \phi H[n] + \sum_j W_{ij} S_j[n]
 
-        Note that the :class:`lib.SpikingLayer` has an attribute called 
+        Note that the :class:`lib.SpikingLayer` has an attribute called
         :math:`phi` that corresponds to :math:`\phi`.
 
         Args:
             H: The auxiliary variable for the alpha-shaped post-synaptic
                 currents :math:`H`.
-            inputs: The inputs (weighted spikes) to the layer in the current 
+            inputs: The inputs (weighted spikes) to the layer in the current
                 time step.
 
         Returns:
@@ -226,7 +224,6 @@ class SpikingLayer(nn.Module):
         raise NotImplementedError('TODO implement')
         # Paste your code from last week here
         # return ...
-
 
     def update_I(self, I, H):
         r"""Updates the post-synaptic current.
@@ -238,32 +235,31 @@ class SpikingLayer(nn.Module):
         .. math::
             I_i[n+1] = \gamma I_i[n] + \Delta t H_i[n]
 
-        Note that the :class:`lib.SpikingLayer` has an attribute called 
+        Note that the :class:`lib.SpikingLayer` has an attribute called
         :math:`gamma` that corresponds to :math:`\gamma`.
 
-        Args: 
+        Args:
             I: The post-synaptic current :math:`I`.
             H: The auxiliary variable for the alpha-shaped post-synaptic
                 currents :math:`H`.
 
         Returns:
             The updated post-synaptic current of the neurons in the layer.
-            
+
         """
         raise NotImplementedError('TODO implement')
         # Paste your code from last week here
         # return ...
 
-
     def forward(self, X):
         r"""Computes the output activation of a spiking layer.
 
         This method computes the membrane potential and spiking activity of the
-        current layer across all time steps given the pre-synaptic spiking 
+        current layer across all time steps given the pre-synaptic spiking
         activity. For this, the state of the layer is
         updated time step by time step; i.e. the post-synaptic current,
         membrane potential and spiking activity are computed in each time step.
-        The states are updated based on the computational graph provided in 
+        The states are updated based on the computational graph provided in
         Figure 2 in `Neftci et al. (2019)`_, and when filling in the missing
         lines you should pay extra attention and make sure that the values
         you provide to the update methods belong to the right time step
@@ -271,23 +267,23 @@ class SpikingLayer(nn.Module):
 
         Note that since we deal with alpha-shaped post-synaptic currents here
         (and not exponential decay post-synaptic currents), the computational
-        graph has an extra variable :math:`H` that is updated based on the 
+        graph has an extra variable :math:`H` that is updated based on the
         inputs in the previous time step, and its own value in the previous
-        time step. :math:`H` in a given time step is then used to compute the 
-        post-synaptic current :math:`I` in the following time step. Notice that 
-        for this extra equation, the :class:`lib.SpikingLayer` class has an 
-        attribute :math:`phi` that governs the decay rate of the variable 
+        time step. :math:`H` in a given time step is then used to compute the
+        post-synaptic current :math:`I` in the following time step. Notice that
+        for this extra equation, the :class:`lib.SpikingLayer` class has an
+        attribute :math:`phi` that governs the decay rate of the variable
         :math:`H`. For further discussion see :mod:`lib.spiking_layer`.
 
         Args:
             X: The spiking activity of the previous layer.
 
-        Returns: 
-            (tuple): Tuple containing:   
+        Returns:
+            (tuple): Tuple containing:
 
-            - **U**: The membrane potential for all neurons of the layer in all 
+            - **U**: The membrane potential for all neurons of the layer in all
               time steps.
-            - **S**: The spiking activity of all neurons of the layer in all 
+            - **S**: The spiking activity of all neurons of the layer in all
               time steps.
 
         """
@@ -295,8 +291,8 @@ class SpikingLayer(nn.Module):
         device = X.device
         dtype = torch.float
 
-        num_h = self.weights.shape[0] # number of neurons in the layer
-        N  = X.shape[1]
+        num_h = self.weights.shape[0]  # number of neurons in the layer
+        N = X.shape[1]
         batch_size = X.shape[0]
 
         # Compute the total input to the layer in all time steps
@@ -310,7 +306,7 @@ class SpikingLayer(nn.Module):
 
         # Initialize states
         U[0] = self.u_rest * torch.ones((batch_size, num_h), device=device,
-                                                             dtype=dtype)
+                                        dtype=dtype)
         S[0] = torch.zeros_like(U[0])
         H[0] = torch.zeros_like(U[0])
         I[0] = torch.zeros_like(U[0])
@@ -337,7 +333,6 @@ class SpikingLayer(nn.Module):
 
         return U, S
 
+
 if __name__ == '__main__':
     pass
-
-
